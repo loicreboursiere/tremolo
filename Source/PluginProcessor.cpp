@@ -22,10 +22,29 @@ TremoloAudioProcessor::TremoloAudioProcessor()
                        )
 #endif
 {
+
+    //juce::AudioParameterFloat*  mainOscFreqParam;
+    //juce::AudioParameterFloat*  mainOscAmpParam;
+    //juce::AudioParameterChoice* mainOscTypeParam;
+    //juce::AudioParameterFloat*  modFreqParam;
+    //juce::AudioParameterFloat*  modDepthParam;
+    //juce::AudioParameterChoice* modTypeParam;
+    
+    castParameter( aptvs, ParameterID::inputChoice, inputParam );
+    castParameter( aptvs, ParameterID::mainOscFreq, mainOscFreqParam );
+    castParameter( aptvs, ParameterID::mainOscAmp,  mainOscAmpParam );
+    castParameter( aptvs, ParameterID::mainOscType, mainOscTypeParam );
+    castParameter( aptvs, ParameterID::modFreq,     modFreqParam );
+    castParameter( aptvs, ParameterID::modDepth,    modDepthParam );
+    castParameter( aptvs, ParameterID::modType,     modTypeParam );
+    
+    aptvs.state.addListener( this );
+
 }
 
 TremoloAudioProcessor::~TremoloAudioProcessor()
 {
+    aptvs.state.removeListener( this );
 }
 
 //==============================================================================
@@ -98,17 +117,14 @@ void TremoloAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     sinusoidalOsc.reset();
     modulatingOsc.reset();
     
-    sinusoidalOsc.inc = oscFreq / sampleRate;
-    sinusoidalOsc.amplitude = oscAmp;
-    sinusoidalOsc.type = modTypeSine;
-
-    modulatingOsc.inc = modFreq / sampleRate;
-    modulatingOsc.amplitude = modAmp;
-    modulatingOsc.type = modTypePhasor;
+    this->sampleRate = sampleRate;
+    
+    parametersChanged.store( true );
     
     DBG( modulatingOsc.inc );
     DBG( modulatingOsc.amplitude );
     DBG( modulatingOsc.type );
+    DBG( inputParam->getIndex() );
 }
 
 void TremoloAudioProcessor::releaseResources()
@@ -148,7 +164,7 @@ void TremoloAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -158,6 +174,10 @@ void TremoloAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    bool expected = true;
+    if( parametersChanged.compare_exchange_strong( expected, false) )
+        update();
+    
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     // Make sure to reset the state if your inner loop is processing
@@ -166,6 +186,7 @@ void TremoloAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+        
         auto* in = buffer.getReadPointer( channel );
         auto* channelData = buffer.getWritePointer (channel);
         
@@ -225,7 +246,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout TremoloAudioProcessor::creat
     
     
     layout.add( std::make_unique<juce::AudioParameterChoice>(
-        ParameterID::mainOscType, "Input Choice",
+        ParameterID::inputChoice, "Input Choice",
         juce::StringArray{ "Oscillator", "Audio input" },
         0
     ));
@@ -245,8 +266,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout TremoloAudioProcessor::creat
     ));
 
     layout.add( std::make_unique<juce::AudioParameterFloat>(
-        ParameterID::mainOscDepth,
-        "Main Oscillator Depth",
+        ParameterID::mainOscAmp,
+        "Main Oscillator Amp",
         juce::NormalisableRange<float>( 0.0f, 1.0f, 0.01f ),
         1.0f
         //juce::AudioParameterFloatAttributes().withLabel( "Hz" )
@@ -276,4 +297,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout TremoloAudioProcessor::creat
     
 
     return layout;
+}
+
+void TremoloAudioProcessor::update() 
+{
+    
+    sinusoidalOsc.inc = mainOscFreqParam->get() / sampleRate;
+    sinusoidalOsc.amplitude = mainOscAmpParam->get();
+    sinusoidalOsc.type = mainOscTypeParam->getIndex();
+
+    modulatingOsc.inc = modFreqParam->get() / sampleRate;
+    modulatingOsc.amplitude = modDepthParam->get();
+    modulatingOsc.type = modTypeParam->getIndex();
+    
 }

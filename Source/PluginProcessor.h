@@ -11,7 +11,7 @@
 #include <JuceHeader.h>
 #include "Oscillator.h"
 #include "Tremolo.h"
-#include "enums.h"
+#include "Utils.h"
 
 namespace ParameterID
 {
@@ -19,7 +19,7 @@ namespace ParameterID
     
     PARAMETER_ID( inputChoice )
     PARAMETER_ID( mainOscFreq )
-    PARAMETER_ID( mainOscDepth )
+    PARAMETER_ID( mainOscAmp )
     PARAMETER_ID( mainOscType )
     PARAMETER_ID( modFreq )
     PARAMETER_ID( modDepth )
@@ -31,7 +31,8 @@ namespace ParameterID
 //==============================================================================
 /**
 */
-class TremoloAudioProcessor  : public juce::AudioProcessor
+class TremoloAudioProcessor  : public juce::AudioProcessor,
+                               private juce::ValueTree::Listener
 {
 public:
     //==============================================================================
@@ -75,17 +76,35 @@ public:
     
 private:
     Oscillator sinusoidalOsc, modulatingOsc;
-    float oscFreq = 180.0f;
-    float oscAmp = 0.5f;
-    float modFreq = 5.0f;
-    float modAmp = 1.0f;
+    //float oscFreq = 180.0f;
+    //float oscAmp = 0.5f;
+    //int oscType = 1;
+    //float modFreq = 5.0f;
+    //float modAmp = 1.0f;
+    //int modType = 0;
     
-    juce::AudioParameterFloat* modFreqParam;
-    juce::AudioParameterFloat* modDepthParam;
+    int sampleRate = 0.0f;
+    
+    juce::AudioParameterChoice* inputParam;
+    juce::AudioParameterFloat*  mainOscFreqParam;
+    juce::AudioParameterFloat*  mainOscAmpParam;
+    juce::AudioParameterChoice* mainOscTypeParam;
+    juce::AudioParameterFloat*  modFreqParam;
+    juce::AudioParameterFloat*  modDepthParam;
     juce::AudioParameterChoice* modTypeParam;
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
+    void update();
+    
+    void valueTreePropertyChanged( juce::ValueTree&, const juce::Identifier& ) override
+    {
+        parametersChanged.store( true );
+    }
+    
+    std::atomic<bool> parametersChanged { false };
+    
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TremoloAudioProcessor)
 };
