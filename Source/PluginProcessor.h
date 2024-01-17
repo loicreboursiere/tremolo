@@ -13,6 +13,21 @@
 #include "Tremolo.h"
 #include "enums.h"
 
+namespace ParameterID
+{
+    #define PARAMETER_ID(str) const juce::ParameterID str(#str, 1);
+    
+    PARAMETER_ID( inputChoice )
+    PARAMETER_ID( mainOscFreq )
+    PARAMETER_ID( mainOscDepth )
+    PARAMETER_ID( mainOscType )
+    PARAMETER_ID( modFreq )
+    PARAMETER_ID( modDepth )
+    PARAMETER_ID( modType )
+    
+    #undef PARAMETER_ID
+}
+
 //==============================================================================
 /**
 */
@@ -56,12 +71,20 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    juce::AudioProcessorValueTreeState aptvs { *this, nullptr, "Parameters", createParameterLayout() };
+    
 private:
     Oscillator sinusoidalOsc, modulatingOsc;
     float oscFreq = 180.0f;
     float oscAmp = 0.5f;
     float modFreq = 5.0f;
     float modAmp = 1.0f;
+    
+    juce::AudioParameterFloat* modFreqParam;
+    juce::AudioParameterFloat* modDepthParam;
+    juce::AudioParameterChoice* modTypeParam;
+    
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TremoloAudioProcessor)
