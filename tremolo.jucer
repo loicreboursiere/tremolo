@@ -4,6 +4,9 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="MQoSWo" name="tremolo">
     <GROUP id="{F87D4192-C9D8-EFC7-674F-E105C8542082}" name="Source">
+      <FILE id="m6hK7p" name="enums.h" compile="0" resource="0" file="Source/enums.h"/>
+      <FILE id="UCnGE6" name="Oscillator.h" compile="0" resource="0" file="Source/Oscillator.h"/>
+      <FILE id="RwiWTU" name="Tremolo.h" compile="0" resource="0" file="Source/Tremolo.h"/>
       <FILE id="PeOJ0Q" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="SsEZT5" name="PluginProcessor.h" compile="0" resource="0"

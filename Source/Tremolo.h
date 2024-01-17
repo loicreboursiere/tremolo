@@ -7,21 +7,30 @@
 
 #pragma once
 
+#include "enums.h"
+
 class Tremolo
 {
     public :
-    float modulationDepth;
-    float modulationFreq;
-    Oscillator lfo;
+        Oscillator lfo;
+        float modulationDepth;
+        float modulationFreq;
+        int modType;
     
-    void reset ()
-    {
+        void initLFO () {
+            lfo.amplitude = 1.0;
+//            lfo.inc = modulationFreq / sampleRate;
+            lfo.type = modType;
+        }
         
-    }
-    
-    void nextSample( )
-    {
+        void reset ()
+        {
+            lfo.reset();
+        }
         
-    }
+        float nextSample()
+        {
+            return modulationDepth * lfo.nextSample();
+        }
 };
 

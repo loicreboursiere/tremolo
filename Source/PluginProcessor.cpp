@@ -100,12 +100,15 @@ void TremoloAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     
     sinusoidalOsc.inc = oscFreq / sampleRate;
     sinusoidalOsc.amplitude = oscAmp;
+    sinusoidalOsc.type = modTypeSine;
 
     modulatingOsc.inc = modFreq / sampleRate;
     modulatingOsc.amplitude = modAmp;
+    modulatingOsc.type = modTypePhasor;
     
-    DBG( sinusoidalOsc.inc );
-    DBG( sinusoidalOsc.amplitude );
+    DBG( modulatingOsc.inc );
+    DBG( modulatingOsc.amplitude );
+    DBG( modulatingOsc.type );
 }
 
 void TremoloAudioProcessor::releaseResources()
@@ -168,8 +171,9 @@ void TremoloAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
         
         for( int i = 0; i < buffer.getNumSamples() ; i++ )
         {
-            *channelData++ = *in++ * modulatingOsc.nextSample();
-            //*channelData++ = sinusoidalOsc.nextSample() * modulatingOsc.nextSample();
+            //*channelData++ = *in++ * modulatingOsc.nextSample();
+            *channelData++ = sinusoidalOsc.nextSample() * modulatingOsc.nextSample();
+            //*channelData++ = sinusoidalOsc.nextSample();
             
         }
     }

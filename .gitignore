@@ -1,2 +1,5 @@
 Builds/
 JuceLibraryCode/
+Source/.*
+._README.md
+._tremolo.jucer
