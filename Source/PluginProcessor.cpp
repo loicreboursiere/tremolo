@@ -187,7 +187,10 @@ bool TremoloAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* TremoloAudioProcessor::createEditor()
 {
-    return new TremoloAudioProcessorEditor (*this);
+    auto editor = new juce::GenericAudioProcessorEditor( *this );
+    editor->setSize( 500, 300 );
+    return editor;
+    //return new TremoloAudioProcessorEditor (*this);
 }
 
 //==============================================================================
@@ -209,4 +212,68 @@ void TremoloAudioProcessor::setStateInformation (const void* data, int sizeInByt
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new TremoloAudioProcessor();
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout TremoloAudioProcessor::createParameterLayout()
+{
+    /**
+     PARAMETER_ID( modFreq )
+     PARAMETER_ID( modDepth )
+     PARAMETER_ID( modType )
+     */
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    
+    
+    layout.add( std::make_unique<juce::AudioParameterChoice>(
+        ParameterID::mainOscType, "Input Choice",
+        juce::StringArray{ "Oscillator", "Audio input" },
+        0
+    ));
+    
+    layout.add( std::make_unique<juce::AudioParameterChoice>(
+        ParameterID::mainOscType, "Main Oscillator type",
+        juce::StringArray{ "Sine", "Saw", "Square", "SquareRounded", "Phasor"},
+        1
+    ));
+               
+    layout.add( std::make_unique<juce::AudioParameterFloat>(
+        ParameterID::mainOscFreq,
+        "Main Oscillator Frequency",
+        juce::NormalisableRange<float>( 20.0f, 20000.0f, 1.0f, 0.3f, false ),
+        220.0f,
+        juce::AudioParameterFloatAttributes().withLabel( "Hz" )
+    ));
+
+    layout.add( std::make_unique<juce::AudioParameterFloat>(
+        ParameterID::mainOscDepth,
+        "Main Oscillator Depth",
+        juce::NormalisableRange<float>( 0.0f, 1.0f, 0.01f ),
+        1.0f
+        //juce::AudioParameterFloatAttributes().withLabel( "Hz" )
+    ));
+    
+    layout.add( std::make_unique<juce::AudioParameterChoice>(
+        ParameterID::modType, "Modulation Type",
+        juce::StringArray{ "Sine", "Saw", "Square", "SquareRounded", "Phasor"},
+        1
+    ));
+               
+    layout.add( std::make_unique<juce::AudioParameterFloat>(
+        ParameterID::modFreq,
+        "Modulation Frequency",
+        juce::NormalisableRange<float>( 0.001f, 20.0f, 0.001f, 0.3f, false ),
+        2.0f,
+        juce::AudioParameterFloatAttributes().withLabel( "Hz" )
+    ));
+
+    layout.add( std::make_unique<juce::AudioParameterFloat>(
+        ParameterID::modDepth,
+        "Modulation Depth",
+        juce::NormalisableRange<float>( 0.0f, 1.0f, 0.01f ),
+        1.0f
+        //juce::AudioParameterFloatAttributes().withLabel( "Hz" )
+    ));
+    
+
+    return layout;
 }
