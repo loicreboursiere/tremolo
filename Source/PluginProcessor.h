@@ -9,6 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Oscillator.h"
+#include "Tremolo.h"
 
 //==============================================================================
 /**
@@ -54,6 +56,12 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    Oscillator sinusoidalOsc, modulatingOsc;
+    float oscFreq = 440.0f;
+    float oscAmp = 0.5f;
+    float modFreq = 0.5f;
+    float modAmp = 1.0f;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TremoloAudioProcessor)
 };

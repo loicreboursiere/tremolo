@@ -15,9 +15,9 @@ TremoloAudioProcessor::TremoloAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+                       .withInput  ("Input",  juce::AudioChannelSet::mono(), true)
                       #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+                       .withOutput ("Output", juce::AudioChannelSet::mono(), true)
                      #endif
                        )
 #endif
@@ -95,6 +95,17 @@ void TremoloAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    sinusoidalOsc.reset();
+    modulatingOsc.reset();
+    
+    sinusoidalOsc.inc = oscFreq / sampleRate;
+    sinusoidalOsc.amplitude = oscAmp;
+
+    modulatingOsc.inc = modFreq / sampleRate;
+    modulatingOsc.amplitude = modAmp;
+    
+    DBG( sinusoidalOsc.inc );
+    DBG( sinusoidalOsc.amplitude );
 }
 
 void TremoloAudioProcessor::releaseResources()
@@ -152,9 +163,15 @@ void TremoloAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+        auto* in = buffer.getReadPointer( channel );
         auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
+        
+        for( int i = 0; i < buffer.getNumSamples() ; i++ )
+        {
+            *channelData++ = *in++ * modulatingOsc.nextSample();
+            //*channelData++ = sinusoidalOsc.nextSample() * modulatingOsc.nextSample();
+            
+        }
     }
 }
 
