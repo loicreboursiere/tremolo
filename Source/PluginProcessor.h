@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "Oscillator.h"
 #include "Tremolo.h"
+#include "enums.h"
 
 //==============================================================================
 /**
@@ -57,9 +58,9 @@ public:
 
 private:
     Oscillator sinusoidalOsc, modulatingOsc;
-    float oscFreq = 440.0f;
+    float oscFreq = 180.0f;
     float oscAmp = 0.5f;
-    float modFreq = 0.5f;
+    float modFreq = 5.0f;
     float modAmp = 1.0f;
     
     //==============================================================================
